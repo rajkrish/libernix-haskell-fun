@@ -1,0 +1,34 @@
+
+h1.  IOList - IO monad transformed by ListT
+
+h4.  Goal:
+
+To create a sample monad transformer that would help someone to understand the concept of Monad transformers better.  
+
+h4.  Solution:
+
+In this example @IOList.hs@ I am nesting a @List@ monad inside the @IO@ monad (yes, lists are monads too).  The combination makes interesting applications 
+for nested data access, e.g. like with relational databases etc.  
+
+h4.  Implementation:
+
+The included script revolves around the common example:
+
+*#  There is a relational database for customers, their purchase orders and the line items in every order.
+
+*#  the user wants to see the list of customers, the list of purchase orders that the customer submitted, and the associated items in each order.
+
+*#  The return type of every method like @getCust@, @getOrd@, and @getProd@ which return customers, orders, and line items respectively are all lists.  Of 
+course, when we access a real DB, then these would be IO operations, and hence would be wrapped inside the IO monad.  However, as the List datatype 
+itself is a monad, we have the interesting combination of 2 different monads, one nested inside the other, like: @IO (List String)@, which is semantically 
+identical to: @m [a]@ contained inside the @ListT@ transformer (defined in @Control.Monad.List@):
+* http://haskell.org/ghc/docs/latest/html/libraries/mtl/Control-Monad-List.html#v%3ArunListT
+* http://haskell.org/ghc/docs/latest/html/libraries/mtl/src/Control-Monad-List.html#ListT
+
+*#  The final enumerate method just pulls lists of customers, orders and products out of the @IO@ + @List@ combined monad (the using the @ListT@ 
+transformer) and prints them.
+
+*#  Of course I am not using any real relational database.  The get* functions are just returning hardcoded values for testing purposes. The code is 
+sufficiently commented.
+
+-Rajesh

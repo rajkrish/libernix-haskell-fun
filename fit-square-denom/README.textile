@@ -1,0 +1,148 @@
+
+h1. The sum of squares fitting problem
+
+Imagine that the government, in its infinite wisdom, suddenly released coins (valued in cents) in the following denominations:
+
+1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169 .... cents etc.
+
+Note that each denomination above is a square of some integer.
+
+Now given the amount @N@ in cents, you need to find all combinations of the 
+coins of the above denominations that would represent the amount @N@.  That is, 
+@N@ = 21 cents could be represented as:
+
+* 21 cents = (21 coins of  1c)
+* 21 cents = (5 coins of  1c) + (4 coins of  4c)
+* 21 cents = (0 coins of  1c) + (3 coins of  4c) + (1 coin of  9c) 
+* 21 cents = (3 coins of  1c) + (0 coins of  4c) + (2 coins of  9c)  etc.
+
+We need to write a program that enumerates all such combinations of coins that add up to @N@.
+
+h1.  Solution in Haskell
+
+Here is my version of the sum of squares fitting problem (modeled as fitting coins with square denominations as described in my earlier mail).  As promised the code is written in the "exotic" programming language, Haskell.
+
+Included in the @fit-square-denom@ folder that contains the FitSquareDenom.hs source, and the corresponding compiled binary executable (for Linux x86_64 architecture only). You could compile it for your platform as mentioned below.
+
+The script @FitSquareDenom.hs@ takes 2 options the first being @-q@ or @-v@ for quiet or verbose mode respectively.  The second is the actual argument @N@ that we are trying to fit as sum of squares.
+
+The included @FitSquareDenom.hs@ script could be run in script mode on the command line as follows (shown along with the generated output).  Note that a recent installation of GHC Haskell compiler is required. (for @runghc@, but not 
+for executing the compiled @FitSquareDenom.x64@ binary on @x86_64@, if compiled to an executable using @ghc@ ; see below).
+
+<pre>
+$ time runghc FitSquareDenom.hs -v 10
+1. 10 cents = (10 coins of 1 cent)
+2. 10 cents = (6 coins of 1 cent) + (1 coin of 4 cents)
+3. 10 cents = (2 coins of 1 cent) + (2 coins of 4 cents)
+4. 10 cents = (1 coin of 1 cent) + (1 coin of 9 cents)
+
+Total number of results = 4
+
+real    0m0.777s
+user    0m0.719s
+sys     0m0.051s
+</pre>
+
+
+Or alternatively, on a @x86_64@ machine, you could simply run the provided precompiled binary:
+
+<pre>
+  $ time  ./FitSquareDenom.x64 -v 10
+1. 10 cents = (10 coins of 1 cent)
+2. 10 cents = (6 coins of 1 cent) + (1 coin of 4 cents)
+3. 10 cents = (2 coins of 1 cent) + (2 coins of 4 cents)
+4. 10 cents = (1 coin of 1 cent) + (1 coin of 9 cents)
+Total number of results = 4
+real    0m0.005s
+user    0m0.003s
+sys     0m0.002s
+</pre>
+
+
+For quiet mode supply -q in place of -v as follows:
+
+<pre>
+  $ time  ./FitSquareDenom.x64 -q 10
+Total number of results = 4
+real    0m0.004s
+user    0m0.001s
+sys     0m0.004s
+</pre>
+
+h1.  Benchmarking
+
+Now for the fun part: Benchmarking:
+
+(the following timing is on my  dual-core Amd64 2.4Ghz machine).
+
+For a trial run of 169 :
+
+<pre>
+  $ time  ./FitSquareDenom.x64 -q 169
+Total number of results = 11592
+real    0m1.227s
+user    0m1.212s
+sys     0m0.011s
+</pre>
+
+That doesn't take too much time so let's increase the argument. So For a trial run of 300:
+
+<pre>
+  $ time  ./FitSquareDenom.x64 -q 300
+Total number of results = 284316
+real    0m24.778s
+user    0m24.612s
+sys     0m0.161s
+</pre>
+
+Of course, in the unoptimized "interpreted" mode, @/usr/bin/runghc@ would take much longer, even in "quiet" mode:
+
+<pre>
+  $ time  runghc FitSquareDenom.hs  -q 169
+Total number of results = 11592
+real    0m7.032s
+user    0m6.798s
+sys     0m0.231s
+</pre>
+
+And in verbose mode, it would take twice as much time, simply because of the slow IO to the screen:
+
+<pre>
+  $ time  runghc FitSquareDenom.hs  -v 169
+...... blah ....
+...... blah ....
+11591. 169 cents = (1 coin of 25 cents) + (1 coin of 144 cents)
+11592. 169 cents = (1 coin of 169 cents)
+Total number of results = 11592
+real    0m16.105s
+user    0m13.010s
+sys     0m2.059s
+</pre>
+
+
+h1. Compiling (requires GHC):
+
+I used the "x64" extension for the 64 bit machine (just so that you don't try to run it on a 32 bit Linux machine, otherwise it is insignificant):
+<pre>
+  $ ghc --make -Wall -O3 -o FitSquareDenom.x64 FitSquareDenom.hs
+</pre>
+
+You could alternatively use either "exe" for Windows:
+
+<pre>
+C:>  ghc --make -Wall -O3 -o FitSquareDenom.exe  FitSquareDenom.hs
+</pre>
+
+ *Warning* --   I haven't tested this on Windows
+
+I haven't commented the code too much though .  But if you want understand the logic, let me know.
+
+But the brief description of the flow of logic is as follows:
+
+*#  For a given amount N, I first find out what denominations could fit it.  E.g.  for N = 10, denoms [9, 4, 1] are valid (decreasing order of denoms is important, and is required to fit the largest first, then the residues with 
+the smaller demoms [4,1] in the second recursive iteration and [1] in the third iteration and so on.
+*#  Then create a tree of all the possible fits. Note that in Haskell such a giant tree as defined is not really created by the system until the elements are used (and only those that are used for that computation).
+*#  Linearize a tree, that is create a list of lists of elements from the root node to every possible leaf.
+*#  Filter this list and print valid results.
+
+-Rajesh

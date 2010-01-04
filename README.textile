@@ -1,0 +1,25 @@
+
+h1.  Description
+
+This project contains some of the example programs I wrote as part of understanding the strongly typed, purely functional programming language -- _Haskell_ .
+
+h1.  Organization
+
+Each Haskell project is contained in its own top-level folder, and is independent of any other project at the top level.
+
+h1. Implementation
+
+h4.  fit-square-denom
+
+This is an example of expressing a given monetary amount @N@ as a sum base units (coins), whose values are square of integers.
+
+Please read the associated @README.textile@ file included in the @fit-square-denom@ directory for more information.
+
+h4.  monad-transformer--io-list 
+
+This example illustrates the use of Monad Transformers.  
+
+The base monad used is @IO@, which is being transformed by the @ListT@ monad transformer.  This could be a starting point for building computations that would help process list of values, e.g. a row of results from a relational database.
+
+
+
